@@ -23,8 +23,8 @@
 import collections
 import errno
 import os
+import re
 
-import giturlparse
 import yaml
 
 
@@ -66,6 +66,18 @@ def _get_files_config(src_dir, files_list):
     ]
 
 
+def _parse_repo(url):
+    pattern = re.compile(r"""
+                             ((?P<protocol>[\w+]+)://)?
+                             ((?P<user>\w+)(:(?P<password>\w+))?@)?
+                             (?P<host>[\w.]+)
+                             (:(?P<port>\d+))?
+                             /(?P<owner>[^\s/]+)
+                             /(?P<repo>[^\s/]+)\.git
+                         """, re.VERBOSE)
+    return re.match(pattern, url).groupdict()
+
+
 def _get_config_generator(filename):
     """
     A generator which populates and return a dict.
@@ -75,8 +87,11 @@ def _get_config_generator(filename):
     """
     for d in _get_config(filename):
         repo = d['git']
-        parsedrepo = giturlparse.parse(repo)
-        name = '{}.{}'.format(parsedrepo.owner, parsedrepo.repo)
+        parsedrepo = _parse_repo(repo)
+        name = '{}.{}'.format(
+            parsedrepo['owner'],
+            parsedrepo['repo']
+        )
         src_dir = os.path.join(_get_clone_dir(), name)
         files = d.get('files')
         dst_dir = None
