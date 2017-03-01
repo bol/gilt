@@ -72,7 +72,8 @@ def _parse_repo(url):
                              ((?P<user>\w+)(:(?P<password>\w+))?@)?
                              (?P<host>[\w.]+)
                              (:(?P<port>\d+))?
-                             /(?P<owner>[^\s/]+)
+                             /([^\s/]+/)*
+                             (?P<owner>[^\s/]+)
                              /(?P<repo>[^\s/]+)\.git
                          """, re.VERBOSE)
     return re.match(pattern, url).groupdict()
